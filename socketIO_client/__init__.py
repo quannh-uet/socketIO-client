@@ -95,6 +95,7 @@ class EngineIO(LoggingMixin):
                 transport.send_packet(2, 'probe')
                 for packet_type, packet_data in transport.recv_packet():
                     if packet_type == 3 and packet_data == b'probe':
+                        self._transport_instance.http_session.__exit__()
                         transport.send_packet(5, '')
                         self._transport_instance = transport
                         self.transport_name = 'websocket'
@@ -198,9 +199,8 @@ class EngineIO(LoggingMixin):
             pass
         if not hasattr(self, '_opened') or not self._opened:
             return
-        engineIO_packet_type = 1
         try:
-            self._transport_instance.send_packet(engineIO_packet_type)
+            self._transport_instance.close()
         except (TimeoutError, ConnectionError):
             pass
         self._opened = False
